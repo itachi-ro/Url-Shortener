@@ -1,0 +1,39 @@
+const User = require("../models/user");
+const { setUser } = require('../service/auth')
+
+async function handleUserSignUp(req, res) {
+  const { name, email, password } = req.body;
+
+  // Validate that name, email, and password are provided
+  if (!name || !email || !password) {
+    return res.render("signup", {
+      error: "All fields (name, email, password) are required!",
+    });
+  }
+
+  await User.create({
+    name,
+    email,
+    password,
+  });
+
+  return res.redirect("/");
+}
+
+async function handleUserLogin(req, res) {
+  const { email, password } = req.body;
+  const user = await User.findOne({ email ,password})
+  
+  if(!user) return res.render("login",{
+    error: "Invalid Username or Password",
+  });
+  
+  const token = setUser(user);
+  res.cookie("token", token);
+  return res.redirect("/");
+}
+
+module.exports = {
+  handleUserSignUp,
+  handleUserLogin,
+};
